@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Radio, TrendingUp, Activity, Zap, Settings } from 'lucide-react';
+import { Radio, TrendingUp, Activity, Zap, Settings, Bell } from 'lucide-react';
 import {
   VelocityChart,
   SentimentMap,
@@ -9,6 +9,8 @@ import {
   StaticNewsTicker,
   TweetList,
   StatsPanel,
+  AlertConfig,
+  NotificationCenter,
   generateDemoVelocityData,
   generateDemoSentimentData,
 } from '@/components/dashboard';
@@ -165,12 +167,24 @@ export default function Home() {
           </h2>
           <TweetList tweets={sentimentData.slice(0, 5)} compact />
         </div>
+
+        {/* Alert Configuration */}
+        <div className="lg:col-span-3 glass-panel p-6">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Bell className="w-5 h-5 text-neon-orange" />
+            Alert Configuration
+          </h2>
+          <AlertConfig />
+        </div>
       </div>
 
       {/* News Ticker */}
       <div className="glass-panel p-4">
         <StaticNewsTicker />
       </div>
+
+      {/* Notification Center */}
+      <NotificationCenter />
     </div>
   );
 }
