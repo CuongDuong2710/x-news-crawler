@@ -1,36 +1,166 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# X News Crawler Dashboard
 
-## Getting Started
+A real-time news intelligence dashboard for monitoring X/Twitter content with AI-powered analysis.
 
-First, run the development server:
+![Dashboard Preview](docs/preview.png)
+
+## ✨ Features
+
+- **📊 News Velocity Chart** - Real-time tweet volume visualization with spike detection
+- **🎯 Semantic Sentiment Map** - Scatter plot showing sentiment distribution over time
+- **🔍 Signal vs Noise Filter** - Filter spam, bots, and low-influence content
+- **📰 Auto-Generated News Ticker** - AI-powered headline generation
+- **🚨 Agentic Alert System** - Configurable alerts with Discord webhook integration
+- **🤖 AI Processing** - Gemini 1.5 Flash for sentiment, categorization, spam detection
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm or pnpm
+- (Optional) X API v2 credentials
+- (Optional) Gemini API key
+- (Optional) Supabase account
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/x-news-crawler.git
+cd x-news-crawler
+
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a `.env.local` file in the root directory:
 
-## Learn More
+```env
+# X API (optional - uses mock data if not provided)
+X_BEARER_TOKEN=your_twitter_bearer_token
 
-To learn more about Next.js, take a look at the following resources:
+# Gemini AI (optional - AI features disabled if not provided)
+GEMINI_API_KEY=your_gemini_api_key
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Supabase (optional - uses local state if not provided)
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🏗️ Architecture
 
-## Deploy on Vercel
+```
+src/
+├── app/                  # Next.js App Router
+│   ├── page.tsx         # Main dashboard
+│   ├── layout.tsx       # Root layout with dark theme
+│   └── globals.css      # Tailwind + custom styles
+├── components/
+│   └── dashboard/       # Dashboard components
+│       ├── VelocityChart.tsx
+│       ├── SentimentMap.tsx
+│       ├── SignalFilter.tsx
+│       ├── NewsTicker.tsx
+│       ├── TweetCard.tsx
+│       ├── StatsPanel.tsx
+│       ├── AlertConfig.tsx
+│       └── NotificationCenter.tsx
+└── lib/
+    ├── db/              # Database schema & client
+    ├── store/           # Zustand state management
+    ├── mock/            # Mock data generators
+    ├── api/             # X API integration
+    ├── ai/              # Gemini AI analyzer
+    ├── alerts/          # Alert engine
+    └── realtime/        # Socket.io infrastructure
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🎨 Tech Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Category | Technology |
+|----------|------------|
+| Framework | Next.js 15+ (App Router) |
+| Styling | Tailwind CSS v4 + Shadcn/UI |
+| Charts | Recharts |
+| State | Zustand |
+| Real-time | Socket.io |
+| AI | Gemini 1.5 Flash |
+| Database | Supabase (PostgreSQL) |
+
+## 📊 Components
+
+### VelocityChart
+Real-time area chart showing tweet volume over time with:
+- Average and peak velocity indicators
+- Spike threshold line (300%+ of average)
+- Gradient fill with neon styling
+
+### SentimentMap
+Scatter plot visualization:
+- X-axis: Time (0-60 minutes ago)
+- Y-axis: Sentiment score (-1 to +1)
+- Point size: Influence (follower count)
+- Color: Positive (green), Neutral (cyan), Negative (pink)
+
+### SignalFilter
+Content filtering controls:
+- Show/hide spam and bot content
+- Minimum follower threshold
+- Category filters (Breaking, Rumor, Opinion, Analysis, Official)
+
+### AlertConfig
+Alert management system:
+- Create alerts with multiple conditions
+- Velocity spike, sentiment shift, keyword match, category match
+- Discord webhook integration
+- In-app notifications
+
+## 🔔 Alert System
+
+Configure alerts that trigger on:
+- **Velocity Spike**: Tweet volume increases 300%+
+- **Sentiment Shift**: Average sentiment exceeds threshold
+- **Keyword Match**: Specific keywords detected
+- **Category Match**: Breaking news or rumor categories
+
+Notifications are sent to:
+- In-app notification center
+- Discord webhook (optional)
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+```
+
+### Docker
+
+```bash
+# Build image
+docker build -t x-news-crawler .
+
+# Run container
+docker run -p 3000:3000 x-news-crawler
+```
+
+## 📝 License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read the contributing guidelines before submitting PRs.
