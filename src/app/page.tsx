@@ -13,9 +13,9 @@ import {
   NotificationCenter,
   generateDemoVelocityData,
 } from '@/components/dashboard';
+import { TOPIC_PRESETS, type TopicPreset } from '@/components/dashboard/SignalFilter';
 import { useDashboardStore } from '@/lib/store';
-import type { Tweet } from '@/lib/db/schema';
-import type { VelocitySnapshot } from '@/lib/db/schema';
+import type { Tweet, VelocitySnapshot } from '@/lib/db/schema';
 
 export default function Home() {
   const { isLive, setLive } = useDashboardStore();
@@ -23,6 +23,7 @@ export default function Home() {
   const [tweets, setTweets] = useState<Tweet[]>([]);
   const [velocityData, setVelocityData] = useState<VelocitySnapshot[]>(generateDemoVelocityData(30));
   const [dataSource, setDataSource] = useState<'newsapi' | 'x_api' | 'mock'>('mock');
+  const [activeTopic, setActiveTopic] = useState<TopicPreset>(TOPIC_PRESETS[0]);
   const [stats, setStats] = useState({
     tweetsAnalyzed: 0,
     sentimentScore: 0,
@@ -33,9 +34,10 @@ export default function Home() {
   });
 
   // Fetch tweets from our API route (which uses real X API or mock)
-  const fetchTweets = useCallback(async () => {
+  const fetchTweets = useCallback(async (query?: string) => {
+    const q = query ?? activeTopic.query;
     try {
-      const res = await fetch('/api/tweets?max=20');
+      const res = await fetch(`/api/tweets?max=20&query=${encodeURIComponent(q)}`);
       if (!res.ok) return;
       const data = await res.json();
 
@@ -85,16 +87,24 @@ export default function Home() {
     }
   }, []);
 
-  // Initial fetch + polling when live
+  // Initial fetch on mount
   useEffect(() => {
-    fetchTweets();
-  }, [fetchTweets]);
+    fetchTweets(activeTopic.query);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  // Polling when live
   useEffect(() => {
     if (!isLive) return;
-    const interval = setInterval(fetchTweets, 15000); // poll every 15 s
+    const interval = setInterval(() => fetchTweets(activeTopic.query), 15000);
     return () => clearInterval(interval);
-  }, [isLive, fetchTweets]);
+  }, [isLive, fetchTweets, activeTopic.query]);
+
+  const handleTopicChange = useCallback((query: string, preset: TopicPreset) => {
+    setActiveTopic(preset);
+    setTweets([]); // clear old feed
+    fetchTweets(query);
+  }, [fetchTweets]);
 
   const avgVelocity = velocityData.reduce((s, v) => s + v.count, 0) / (velocityData.length || 1);
   const peakVelocity = Math.max(...velocityData.map((v) => v.count), 0);
@@ -134,7 +144,7 @@ export default function Home() {
 
           <div className="flex items-center gap-4">
             <button
-              onClick={() => { fetchTweets(); }}
+              onClick={() => { fetchTweets(activeTopic.query); }}
               className="glass-panel px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               ↻ Refresh
@@ -190,7 +200,7 @@ export default function Home() {
             <Zap className="w-5 h-5 text-neon-orange" />
             Signal / Noise Filter
           </h2>
-          <SignalFilter />
+          <SignalFilter onTopicChange={handleTopicChange} />
         </div>
 
         {/* Sentiment Map */}
