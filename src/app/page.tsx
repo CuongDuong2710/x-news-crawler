@@ -22,7 +22,7 @@ export default function Home() {
 
   const [tweets, setTweets] = useState<Tweet[]>([]);
   const [velocityData, setVelocityData] = useState<VelocitySnapshot[]>(generateDemoVelocityData(30));
-  const [dataSource, setDataSource] = useState<'newsapi' | 'x_api' | 'mock'>('mock');
+  const [dataSource, setDataSource] = useState<'rss' | 'newsapi' | 'x_api' | 'mock'>('mock');
   const [activeTopic, setActiveTopic] = useState<TopicPreset>(TOPIC_PRESETS[0]);
   const [stats, setStats] = useState({
     tweetsAnalyzed: 0,
@@ -34,10 +34,15 @@ export default function Home() {
   });
 
   // Fetch tweets from our API route (which uses real X API or mock)
-  const fetchTweets = useCallback(async (query?: string) => {
+  const fetchTweets = useCallback(async (query?: string, keywords?: string[]) => {
     const q = query ?? activeTopic.query;
+    const kw = keywords ?? activeTopic.keywords;
     try {
-      const res = await fetch(`/api/tweets?max=20&query=${encodeURIComponent(q)}`);
+      const url = new URL('/api/tweets', window.location.href);
+      url.searchParams.set('max', '20');
+      url.searchParams.set('query', q);
+      if (kw.length) url.searchParams.set('keywords', kw.join(','));
+      const res = await fetch(url.toString());
       if (!res.ok) return;
       const data = await res.json();
 
@@ -102,8 +107,8 @@ export default function Home() {
 
   const handleTopicChange = useCallback((query: string, preset: TopicPreset) => {
     setActiveTopic(preset);
-    setTweets([]); // clear old feed
-    fetchTweets(query);
+    setTweets([]);
+    fetchTweets(query, preset.keywords);
   }, [fetchTweets]);
 
   const avgVelocity = velocityData.reduce((s, v) => s + v.count, 0) / (velocityData.length || 1);
@@ -132,11 +137,13 @@ export default function Home() {
                     dataSource !== 'mock' ? 'text-neon-green' : 'text-neon-orange'
                   }
                 >
-                  {dataSource === 'newsapi'
-                    ? 'Live • NewsAPI'
-                    : dataSource === 'x_api'
-                      ? 'Live • X API'
-                      : 'Mock Data'}
+                  {dataSource === 'rss'
+                    ? 'Live • RSS'
+                    : dataSource === 'newsapi'
+                      ? 'Live • NewsAPI'
+                      : dataSource === 'x_api'
+                        ? 'Live • X API'
+                        : 'Mock Data'}
                 </span>
               </p>
             </div>
